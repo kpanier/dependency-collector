@@ -1,0 +1,135 @@
+buildscript {
+   repositories {
+      maven { url "https://plugins.gradle.org/m2/" }
+      maven { url "https://jitpack.io" }
+   }
+   dependencies {
+      classpath "com.github.jengelman.gradle.plugins:shadow:1.2.4"
+   }
+}
+
+repositories {
+   mavenCentral()
+}
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'eclipse'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+
+sourceCompatibility = 1.8
+mainClassName = "org.aysada.licensescollector.LicensesCollectorApplication"
+
+shadowJar {
+   version = null
+   mergeServiceFiles()
+}
+
+eclipse {
+   classpath.file.whenMerged { classpath ->
+      classpath.entries.removeAll { entry ->
+         entry.path.contains('build/out')
+      }
+   }
+}
+
+task vscodeClasspathFile {
+    description 'Generates classpath file for the Visual Studio Code java plugin'
+    ext.destFile = file("$buildDir/classpath.txt")
+    outputs.file destFile
+    doLast {
+        def classpathString = configurations.compile.collect{ it.absolutePath }.join(File.pathSeparator)
+        if (!destFile.parentFile.exists()) {
+            destFile.parentFile.mkdirs()
+        }
+        assert destFile.parentFile.exists()
+        destFile.text = classpathString
+    }
+}
+
+task vscodeJavaconfigFile(dependsOn: vscodeClasspathFile) {
+    description 'Generates javaconfig.json file for the Visual Studio Code java plugin'
+
+    def relativePath = { File f ->
+        f.absolutePath - "${project.rootDir.absolutePath}/"
+    }
+    ext.destFile = file("javaconfig.json")
+    ext.config = [
+        sourcePath: sourceSets.collect{ it.java.srcDirs }.flatten().collect{ relativePath(it) },
+        classPathFile: relativePath(tasks.getByPath('vscodeClasspathFile').outputs.files.singleFile),
+        outputDirectory: relativePath(new File(buildDir, 'vscode-classes'))
+    ]
+    doLast {
+        def jsonContent = groovy.json.JsonOutput.toJson(ext.config)
+        destFile.text = groovy.json.JsonOutput.prettyPrint(jsonContent)
+    }
+}
+
+task vscode(dependsOn: vscodeJavaconfigFile) {
+    description 'Generates config files for the Visual Studio Code java plugin'
+    group 'vscode'
+}
+
+configurations {
+   integrationTestCompile { extendsFrom testCompile }
+   integrationTestRuntime { extendsFrom testRuntime }
+}
+
+sourceSets {
+   main {
+      output.classesDir = 'build/out'
+      output.resourcesDir = 'build/out'
+   }
+   integrationTest {
+      java.srcDir 'src/integrationTest/java'
+      resources.srcDir 'src/integrationTest/resources'
+      // the following lines are neeed, due to this:
+      // https://deltaspike.apache.org/documentation/test-control.html#Gradle
+      output.classesDir = 'build/out'
+      output.resourcesDir = 'build/out'
+      compileClasspath += project.sourceSets.main.runtimeClasspath
+   }
+}
+
+jar { duplicatesStrategy = 'exclude' }
+
+tasks.withType(Test) { maxParallelForks 4 }
+
+task("integrationTest", type: Test) {
+   testClassesDir = sourceSets.integrationTest.output.classesDir
+   classpath += configurations.integrationTestRuntime + sourceSets.integrationTest.runtimeClasspath
+}
+
+group 'org.aysada.licenses-collector-service'
+
+project.ext {
+   dropwizardVersion = '1.1.0'
+   configPath = "$rootProject.projectDir/"
+}
+
+dependencies {
+   compile group: 'javax', name: 'javaee-api', version: '7.0'
+
+
+   compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
+   compile group: 'io.dropwizard', name: 'dropwizard-client', version: dropwizardVersion
+   compile group: 'org.zapodot', name: 'hystrix-dropwizard-bundle', version: '0.5'
+
+   compile group: 'org.glassfish.jersey.ext.cdi', name: 'jersey-cdi1x', version: '2.25'
+   compile group: 'org.jboss.weld.servlet', name: 'weld-servlet-core', version: '2.4.3.Final'
+
+   compile group: 'ma.glasnost.orika', name: 'orika-core', version: '1.5.0'
+   compile group: 'io.swagger', name: 'swagger-annotations', version: '1.5.12'
+   compile group: 'io.swagger', name: 'swagger-jaxrs', version: '1.5.12'
+
+   compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '4.7.0.201704051617-r'
+   
+   testCompile group: 'io.dropwizard', name: 'dropwizard-testing', version: dropwizardVersion
+   testCompile group: 'org.mockito', name: 'mockito-core', version: '2.7.19' 
+   testCompile 'org.jboss.weld:weld-junit4:1.1.0.Final'
+   testCompile group: 'org.jboss.weld.se', name: 'weld-se', version: '2.4.3.Final'
+
+}
+
+run { args 'server', configPath + 'config.yml' }
