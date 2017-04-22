@@ -11,6 +11,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import com.codahale.metrics.health.HealthCheckRegistry;
+
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.jetty.setup.ServletEnvironment;
 import io.dropwizard.setup.Environment;
@@ -22,13 +24,16 @@ public class LicensesCollectorApplicationTest {
 	public MockitoRule mockitoRule = MockitoJUnit.rule();
 
 	@Mock
-	Environment env;
+	private Environment env;
 
 	@Mock
-	JerseyEnvironment jersey;
+	private JerseyEnvironment jersey;
 
 	@Mock
-	ServletEnvironment servlet;
+	private ServletEnvironment servlet;
+
+	@Mock
+	private HealthCheckRegistry healthChecks;
 
 	@Test
 	public void testRunWithCorrectServerConfig() throws Exception {
@@ -36,6 +41,7 @@ public class LicensesCollectorApplicationTest {
 		LicensesCollectorApplication application = new LicensesCollectorApplication();
 		when(env.jersey()).thenReturn(jersey);
 		when(env.servlets()).thenReturn(servlet);
+		when(env.healthChecks()).thenReturn(healthChecks);
 
 		// when
 		application.run(new AppConfiguration(), env);

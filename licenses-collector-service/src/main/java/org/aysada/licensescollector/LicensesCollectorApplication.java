@@ -11,6 +11,7 @@
 package org.aysada.licensescollector;
 
 import org.aysada.licensescollector.api.projectinfo.ProjectInfoEndPoint;
+import org.aysada.licensescollector.health.DiskSpaceHealthCheck;
 import org.glassfish.jersey.server.ServerProperties;
 import org.jboss.weld.environment.servlet.Listener;
 import org.slf4j.Logger;
@@ -40,6 +41,8 @@ public class LicensesCollectorApplication extends Application<AppConfiguration> 
 		environment.jersey().register(new ApiListingResource());
 		environment.jersey().register(ProjectInfoEndPoint.class);
 		environment.jersey().enable(ServerProperties.LOCATION_HEADER_RELATIVE_URI_RESOLUTION_DISABLED);
+		
+		environment.healthChecks().register("Free Diskscpace", new DiskSpaceHealthCheck());
 
 		environment.servlets().addServletListeners(new Listener());
 	}
