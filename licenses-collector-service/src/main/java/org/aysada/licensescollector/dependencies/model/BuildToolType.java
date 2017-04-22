@@ -8,24 +8,10 @@
  * Contributors:
  * Karsten Panier - initial API and implementation
  *******************************************************************************/
-package org.aysada.licensescollector.dependencies.impl;
+package org.aysada.licensescollector.dependencies.model;
 
-import org.aysada.licensescollector.dependencies.BuildTool;
-import org.aysada.licensescollector.dependencies.model.BuildToolType;
+public enum BuildToolType {
 
-public class MavenBuildTool implements BuildTool {
-
-	@Override
-	public boolean isBuildFile(String fileName) {
-		if (fileName.equals("pom.xml")) {
-			return true;
-		}
-		return false;
-	}
-
-	@Override
-	public BuildToolType getType() {
-		return BuildToolType.MAVEN;
-	}
+	MAVEN, GRADLE, NPM;
 
 }

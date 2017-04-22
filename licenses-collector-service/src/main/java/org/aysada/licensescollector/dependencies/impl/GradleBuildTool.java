@@ -11,6 +11,7 @@
 package org.aysada.licensescollector.dependencies.impl;
 
 import org.aysada.licensescollector.dependencies.BuildTool;
+import org.aysada.licensescollector.dependencies.model.BuildToolType;
 
 public class GradleBuildTool implements BuildTool {
 
@@ -20,6 +21,11 @@ public class GradleBuildTool implements BuildTool {
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	public BuildToolType getType() {
+		return BuildToolType.GRADLE;
 	}
 
 }

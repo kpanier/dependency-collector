@@ -20,23 +20,25 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import org.aysada.licensescollector.dependencies.model.BuildFile;
+
 public class CodeBaseHandler {
 
-	int DEFAULT_SCAN_DEPTH = 3;
-	int UNLIMITED_SCAN_DEPTH = Integer.MAX_VALUE;
+	public static int DEFAULT_SCAN_DEPTH = 3;
+	public static int UNLIMITED_SCAN_DEPTH = Integer.MAX_VALUE;
 
 	@Inject
-	private BuildToolFactory buildToolFactory;
-	
-	@Inject 
+	private BuildFileFactory buildFileFactory;
+
+	@Inject
 	private CodeBaseProvider codeBaseProvider;
 
-	public List<Path> lookUpBuildFiles(String remoteUrl, int scanDepth) {
+	public List<BuildFile> lookUpBuildFiles(String remoteUrl, int scanDepth) {
 		try {
 			File root = codeBaseProvider.getLocalRepositoryRoot(remoteUrl);
-			Stream<Path> stream = Files.walk(root.toPath(), scanDepth);
-			List<Path> result = stream.filter(f -> buildToolFactory.isBuildFile(f.toFile().getName()))
-					.collect(Collectors.toList());
+			Stream<Path> stream = Files.walk(root.getParentFile().toPath(), scanDepth);
+			List<BuildFile> result = stream.filter(f -> buildFileFactory.isBuildFile(f.toFile().getName()))
+					.map(p -> buildFileFactory.createBuildFileFrom(root.toPath(), p)).collect(Collectors.toList());
 			stream.close();
 			return result;
 		} catch (IOException e) {

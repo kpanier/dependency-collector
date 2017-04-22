@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
-import org.aysada.licensescollector.dependencies.BuildToolFactory;
+import org.aysada.licensescollector.dependencies.BuildFileFactory;
 import org.aysada.licensescollector.dependencies.util.TempDirectoryBean;
 import org.jboss.weld.junit4.WeldInitiator;
 import org.junit.Rule;
@@ -31,7 +31,7 @@ public class GitCodeBaseProviderIT {
 
 	public GitCodeBaseProviderIT() {
 		tempFolder = new TemporaryFolder();
-		weld = WeldInitiator.from(GitCodeBaseProvider.class, BuildToolFactory.class)
+		weld = WeldInitiator.from(GitCodeBaseProvider.class, BuildFileFactory.class)
 				.addBeans(TempDirectoryBean.createTemporyDirectoryHelperBean(tempFolder)).build();
 	}
 

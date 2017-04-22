@@ -17,11 +17,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.List;
 
 import javax.enterprise.inject.spi.Bean;
 
+import org.aysada.licensescollector.dependencies.model.BuildFile;
 import org.jboss.weld.junit4.MockBean;
 import org.jboss.weld.junit4.WeldInitiator;
 import org.junit.Rule;
@@ -31,7 +31,7 @@ import org.junit.rules.TemporaryFolder;
 public class CodeBaseHandlerTest {
 
 	@Rule
-	public WeldInitiator weld = WeldInitiator.from(CodeBaseHandler.class, BuildToolFactory.class)
+	public WeldInitiator weld = WeldInitiator.from(CodeBaseHandler.class, BuildFileFactory.class)
 			.addBeans(createBeanConfig()).build();
 
 	@Rule
@@ -45,7 +45,7 @@ public class CodeBaseHandlerTest {
 	public void testLookUpBuildFiles() throws Exception {
 		// given
 		codeBaseHandler = weld.select(CodeBaseHandler.class).get();
-		File prjRoot = tempFolder.newFolder();
+		File prjRoot = tempFolder.newFolder("fooPrj");
 		new File(prjRoot, "pom.xml").createNewFile();
 		new File(prjRoot, "settings.xml").createNewFile();
 		File subDir = new File(prjRoot, "subDir");
@@ -55,7 +55,7 @@ public class CodeBaseHandlerTest {
 		when(codeBaseProvider.getLocalRepositoryRoot(any())).thenReturn(prjRoot);
 
 		// when
-		List<Path> buildFiles = codeBaseHandler.lookUpBuildFiles("foo", 2);
+		List<BuildFile> buildFiles = codeBaseHandler.lookUpBuildFiles("foo", 3);
 
 		// then
 		assertNotNull(buildFiles);

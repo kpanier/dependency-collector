@@ -21,7 +21,8 @@ import org.junit.rules.TemporaryFolder;
 public class TempDirectoryBean {
 
 	public static Bean<?> createTemporyDirectoryHelperBean(TemporaryFolder tempFolder) {
-		return MockBean.builder().types(TempDirectoryHelper.class).creating(getTestTempDirectoryHelper(tempFolder)).build();
+		return MockBean.builder().types(TempDirectoryHelper.class).creating(getTestTempDirectoryHelper(tempFolder))
+				.build();
 	}
 
 	private static TempDirectoryHelper getTestTempDirectoryHelper(TemporaryFolder tempFolder) {

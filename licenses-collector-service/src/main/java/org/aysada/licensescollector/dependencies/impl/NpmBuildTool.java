@@ -11,6 +11,7 @@
 package org.aysada.licensescollector.dependencies.impl;
 
 import org.aysada.licensescollector.dependencies.BuildTool;
+import org.aysada.licensescollector.dependencies.model.BuildToolType;
 
 public class NpmBuildTool implements BuildTool {
 
@@ -20,6 +21,11 @@ public class NpmBuildTool implements BuildTool {
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	public BuildToolType getType() {
+		return BuildToolType.NPM;
 	}
 
 }

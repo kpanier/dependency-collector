@@ -10,8 +10,12 @@
  *******************************************************************************/
 package org.aysada.licensescollector.dependencies;
 
+import org.aysada.licensescollector.dependencies.model.BuildToolType;
+
 public interface BuildTool {
 
 	boolean isBuildFile(String fileName);
+
+	BuildToolType getType();
 
 }
