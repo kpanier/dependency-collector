@@ -38,4 +38,8 @@ public class BuildFileFactory {
 		return result;
 	}
 
+	public BuildTool getBuildToolFor(BuildFile buildFile) {
+		return buildTools.stream().filter(t -> t.getType().equals(buildFile.getBuildToolType())).findFirst().get();
+	}
+
 }

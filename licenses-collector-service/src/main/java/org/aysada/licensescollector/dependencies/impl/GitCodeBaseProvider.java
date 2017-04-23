@@ -22,12 +22,16 @@ import org.aysada.licensescollector.helper.TempDirectoryHelper;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GitCodeBaseProvider implements CodeBaseProvider {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(GitCodeBaseProvider.class);
+
 	@Inject
 	private TempDirectoryHelper tempDirectoryHelper;
-	
+
 	public File getLocalRepositoryRoot(String remoteUrl) {
 		try {
 			File prjWs = getLocalWSFor(remoteUrl);
@@ -36,6 +40,7 @@ public class GitCodeBaseProvider implements CodeBaseProvider {
 				Git git = new Git(repo);
 				git.fetch().call();
 				git.close();
+				LOGGER.info("Lcoal git repo for {} updated.", remoteUrl);
 				return repo.getDirectory();
 			} else {
 				prjWs.mkdir();
@@ -43,11 +48,11 @@ public class GitCodeBaseProvider implements CodeBaseProvider {
 						.call();
 				File directory = localRepo.getRepository().getDirectory();
 				localRepo.close();
+				LOGGER.info("Cloned lcoal git repo for {}.", remoteUrl);
 				return directory;
 			}
 		} catch (IOException | GitAPIException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.error("Error working with git.", e);
 		}
 		return null;
 	}
@@ -57,8 +62,7 @@ public class GitCodeBaseProvider implements CodeBaseProvider {
 			String encode = URLEncoder.encode(remoteUrl, "UTF-8");
 			return new File(tempDirectoryHelper.getTempDirectory(), encode);
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.error("Can't encode.", e);
 		}
 		return null;
 	}

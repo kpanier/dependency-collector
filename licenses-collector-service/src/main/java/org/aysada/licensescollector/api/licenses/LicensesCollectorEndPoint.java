@@ -8,20 +8,16 @@
  * Contributors:
  * Karsten Panier - initial API and implementation
  *******************************************************************************/
-package org.aysada.licensescollector.dependencies;
+package org.aysada.licensescollector.api.licenses;
 
-import java.util.List;
+import javax.ws.rs.core.Response;
 
-import org.aysada.licensescollector.dependencies.model.BuildFile;
-import org.aysada.licensescollector.dependencies.model.BuildToolType;
-import org.aysada.licensescollector.dependencies.model.Dependency;
+public class LicensesCollectorEndPoint implements LicensesCollectorService {
 
-public interface BuildTool {
-
-	boolean isBuildFile(String fileName);
-
-	BuildToolType getType();
-
-	List<Dependency> getDependencies(BuildFile buildFile);
+	@Override
+	public Response getLicenses(String repoUrl) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

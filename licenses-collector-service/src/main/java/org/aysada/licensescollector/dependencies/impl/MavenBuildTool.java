@@ -10,8 +10,12 @@
  *******************************************************************************/
 package org.aysada.licensescollector.dependencies.impl;
 
+import java.util.List;
+
 import org.aysada.licensescollector.dependencies.BuildTool;
+import org.aysada.licensescollector.dependencies.model.BuildFile;
 import org.aysada.licensescollector.dependencies.model.BuildToolType;
+import org.aysada.licensescollector.dependencies.model.Dependency;
 
 public class MavenBuildTool implements BuildTool {
 
@@ -26,6 +30,12 @@ public class MavenBuildTool implements BuildTool {
 	@Override
 	public BuildToolType getType() {
 		return BuildToolType.MAVEN;
+	}
+
+	@Override
+	public List<Dependency> getDependencies(BuildFile buildFile) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

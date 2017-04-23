@@ -105,7 +105,7 @@ public class BuildFileFactoryTest {
 		File folder = tempFolder.newFolder("foo");
 		File buildFile = new File(folder, "package.json");
 		buildFile.createNewFile();
-		
+
 		// when
 		BuildFile gradleFile = factory.createBuildFileFrom(tempFolder.getRoot().toPath(), buildFile.toPath());
 
@@ -114,6 +114,45 @@ public class BuildFileFactoryTest {
 		assertEquals("package.json", gradleFile.getFileName());
 		assertEquals("foo/package.json", gradleFile.getRelativeProjectPath());
 		assertEquals(buildFile.toPath(), gradleFile.getPath());
+	}
+
+	@Test
+	public void testGetBuildToolForMaven() throws Exception {
+		// given
+		BuildFile buildFile = new BuildFile();
+		buildFile.setBuildToolType(BuildToolType.MAVEN);
+
+		// when
+		BuildTool tool = factory.getBuildToolFor(buildFile);
+
+		// then
+		assertEquals(BuildToolType.MAVEN, tool.getType());
+	}
+
+	@Test
+	public void testGetBuildToolForGradle() throws Exception {
+		// given
+		BuildFile buildFile = new BuildFile();
+		buildFile.setBuildToolType(BuildToolType.GRADLE);
+
+		// when
+		BuildTool tool = factory.getBuildToolFor(buildFile);
+
+		// then
+		assertEquals(BuildToolType.GRADLE, tool.getType());
+	}
+
+	@Test
+	public void testGetBuildToolForNPM() throws Exception {
+		// given
+		BuildFile buildFile = new BuildFile();
+		buildFile.setBuildToolType(BuildToolType.NPM);
+
+		// when
+		BuildTool tool = factory.getBuildToolFor(buildFile);
+
+		// then
+		assertEquals(BuildToolType.NPM, tool.getType());
 	}
 
 }

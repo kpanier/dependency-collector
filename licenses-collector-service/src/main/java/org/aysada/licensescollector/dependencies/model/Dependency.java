@@ -8,20 +8,8 @@
  * Contributors:
  * Karsten Panier - initial API and implementation
  *******************************************************************************/
-package org.aysada.licensescollector.dependencies;
+package org.aysada.licensescollector.dependencies.model;
 
-import java.util.List;
-
-import org.aysada.licensescollector.dependencies.model.BuildFile;
-import org.aysada.licensescollector.dependencies.model.BuildToolType;
-import org.aysada.licensescollector.dependencies.model.Dependency;
-
-public interface BuildTool {
-
-	boolean isBuildFile(String fileName);
-
-	BuildToolType getType();
-
-	List<Dependency> getDependencies(BuildFile buildFile);
+public class Dependency {
 
 }
