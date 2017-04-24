@@ -4,8 +4,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                dir('licenses-collector-service')
-                sh "./gradlew clean a"
+                sh "licenses-collector-service/gradlew -b licenses-collector-service/build.gradle clean a"
             }
         }
         stage('Test') {
