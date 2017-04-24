@@ -9,14 +9,12 @@ pipeline {
         }
         stage('Test') {
             steps {
-                dir('licenses-collector-service')
-                sh "./gradlew test"
+                sh "licenses-collector-service/gradlew -b licenses-collector-service/build.gradle test"
             }
         }
         stage('Integration Test') {
             steps {
-                dir('licenses-collector-service')
-                sh "./gradlew integrationTest"
+                sh "licenses-collector-service/gradlew -b licenses-collector-service/build.gradle integrationTest"
             }
         }
     }
