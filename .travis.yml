@@ -6,6 +6,6 @@ jobs:
     - stage: test
       script: licenses-collector-service/gradlew -b licenses-collector-service/build.gradle test iT
     - stage: Dependency security checks
-      script: licenses-collector-service/gradlew -b licenses-collector-service/build.gradle depChe      
+      script: travis_wait 30 licenses-collector-service/gradlew -b licenses-collector-service/build.gradle depChe      
     - stage: Package
       script: licenses-collector-service/gradlew -b licenses-collector-service/build.gradle a
