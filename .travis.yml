@@ -4,7 +4,7 @@ jdk:
 jobs:
   include:
     - stage: test
-      script: licenses-collector-service/gradlew -b licenses-collector-service/build.gradle test It
+      script: licenses-collector-service/gradlew -b licenses-collector-service/build.gradle test iT
     - stage: Dependency security checks
       script: licenses-collector-service/gradlew -b licenses-collector-service/build.gradle depChe      
     - stage: Package
