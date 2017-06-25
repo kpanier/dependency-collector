@@ -1,110 +1,31 @@
-buildscript {
-   repositories {
-      maven { url "https://plugins.gradle.org/m2/" }
-      maven { url "https://jitpack.io" }
-   }
-   dependencies {
-      classpath "com.github.jengelman.gradle.plugins:shadow:1.2.4"
-   }
+plugins {
+    id 'application'
+    id "nebula.integtest" version "3.4.0"
+    id "org.owasp.dependencycheck" version "1.4.5.1"
 }
 
 repositories {
-   mavenCentral()
+    mavenCentral()
+    maven {url "https://repo.gradle.org/gradle/libs-releases-local/"}
 }
-
-apply plugin: 'java'
-apply plugin: 'application'
-apply plugin: 'eclipse'
-apply plugin: 'com.github.johnrengelman.shadow'
-
 
 sourceCompatibility = 1.8
 mainClassName = "org.aysada.licensescollector.LicensesCollectorApplication"
-
-shadowJar {
-   version = null
-   mergeServiceFiles()
-}
-
-eclipse {
-   classpath.file.whenMerged { classpath ->
-      classpath.entries.removeAll { entry ->
-         entry.path.contains('build/out')
-      }
-   }
-}
-
-task vscodeClasspathFile {
-    description 'Generates classpath file for the Visual Studio Code java plugin'
-    ext.destFile = file("$buildDir/classpath.txt")
-    outputs.file destFile
-    doLast {
-        def classpathString = configurations.compile.collect{ it.absolutePath }.join(File.pathSeparator)
-        if (!destFile.parentFile.exists()) {
-            destFile.parentFile.mkdirs()
-        }
-        assert destFile.parentFile.exists()
-        destFile.text = classpathString
-    }
-}
-
-task vscodeJavaconfigFile(dependsOn: vscodeClasspathFile) {
-    description 'Generates javaconfig.json file for the Visual Studio Code java plugin'
-
-    def relativePath = { File f ->
-        f.absolutePath - "${project.rootDir.absolutePath}/"
-    }
-    ext.destFile = file("javaconfig.json")
-    ext.config = [
-        sourcePath: sourceSets.collect{ it.java.srcDirs }.flatten().collect{ relativePath(it) },
-        classPathFile: relativePath(tasks.getByPath('vscodeClasspathFile').outputs.files.singleFile),
-        outputDirectory: relativePath(new File(buildDir, 'vscode-classes'))
-    ]
-    doLast {
-        def jsonContent = groovy.json.JsonOutput.toJson(ext.config)
-        destFile.text = groovy.json.JsonOutput.prettyPrint(jsonContent)
-    }
-}
-
-task vscode(dependsOn: vscodeJavaconfigFile) {
-    description 'Generates config files for the Visual Studio Code java plugin'
-    group 'vscode'
-}
-
-configurations {
-   integrationTestCompile { extendsFrom testCompile }
-   integrationTestRuntime { extendsFrom testRuntime }
-}
-
-sourceSets {
-   main {
-      output.classesDir = 'build/out'
-      output.resourcesDir = 'build/out'
-   }
-   integrationTest {
-      java.srcDir 'src/integrationTest/java'
-      resources.srcDir 'src/integrationTest/resources'
-      // the following lines are neeed, due to this:
-      // https://deltaspike.apache.org/documentation/test-control.html#Gradle
-      output.classesDir = 'build/out'
-      output.resourcesDir = 'build/out'
-      compileClasspath += project.sourceSets.main.runtimeClasspath
-   }
-}
-
-jar { duplicatesStrategy = 'exclude' }
-
-tasks.withType(Test) { maxParallelForks 4 }
-
-task("integrationTest", type: Test) {
-   testClassesDir = sourceSets.integrationTest.output.classesDir
-   classpath += configurations.integrationTestRuntime + sourceSets.integrationTest.runtimeClasspath
-}
-
 group 'org.aysada.licenses-collector-service'
 
+sourceSets {
+    main {
+        output.classesDir = 'build/out'
+        output.resourcesDir = 'build/out'
+    }
+}
+
+tasks.withType(Test) {
+    maxParallelForks 4
+}
+
 project.ext {
-   dropwizardVersion = '1.1.0'
+   dropwizardVersion = '1.1.1'
    configPath = "$rootProject.projectDir/"
 }
 
@@ -124,6 +45,7 @@ dependencies {
    compile group: 'io.swagger', name: 'swagger-jaxrs', version: '1.5.12'
 
    compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '4.7.0.201704051617-r'
+   compile group: 'org.gradle', name: 'gradle-tooling-api', version: '3.5'
    
    testCompile group: 'io.dropwizard', name: 'dropwizard-testing', version: dropwizardVersion
    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.7.19' 

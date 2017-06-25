@@ -12,6 +12,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.jetty.setup.ServletEnvironment;
@@ -35,6 +36,9 @@ public class LicensesCollectorApplicationTest {
 	@Mock
 	private HealthCheckRegistry healthChecks;
 
+	@Mock
+	private ObjectMapper objectMapper;
+
 	@Test
 	public void testRunWithCorrectServerConfig() throws Exception {
 		// given
@@ -42,7 +46,9 @@ public class LicensesCollectorApplicationTest {
 		when(env.jersey()).thenReturn(jersey);
 		when(env.servlets()).thenReturn(servlet);
 		when(env.healthChecks()).thenReturn(healthChecks);
+		when(env.getObjectMapper()).thenReturn(objectMapper);
 
+		
 		// when
 		application.run(new AppConfiguration(), env);
 

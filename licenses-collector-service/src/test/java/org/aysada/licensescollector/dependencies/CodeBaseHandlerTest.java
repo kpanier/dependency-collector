@@ -13,7 +13,6 @@ package org.aysada.licensescollector.dependencies;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -23,12 +22,13 @@ import java.util.List;
 
 import javax.enterprise.inject.spi.Bean;
 
+import org.aysada.licensescollector.dependencies.impl.GitCodeBaseProvider;
 import org.aysada.licensescollector.dependencies.model.BuildFile;
 import org.aysada.licensescollector.dependencies.model.BuildToolType;
 import org.aysada.licensescollector.dependencies.model.Dependency;
+import org.aysada.licensescollector.helper.TempDirectoryHelper;
 import org.jboss.weld.junit4.MockBean;
 import org.jboss.weld.junit4.WeldInitiator;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -37,18 +37,24 @@ public class CodeBaseHandlerTest {
 
 	@Rule
 	public WeldInitiator weld = WeldInitiator.from(CodeBaseHandler.class, BuildFileFactory.class)
-			.addBeans(createBeanConfig()).build();
-	
+			.addBeans(createCodeBaseProviderBeanConfig()).build();
+
+	@Rule
+	public WeldInitiator weld2 = WeldInitiator
+			.from(CodeBaseHandler.class, GitCodeBaseProvider.class, TempDirectoryHelper.class)
+			.addBeans(createBuildFactoryBean()).build();
+
 	@Rule
 	public TemporaryFolder tempFolder = new TemporaryFolder();
 
 	private CodeBaseProvider codeBaseProvider;
 	private CodeBaseHandler codeBaseHandler;
 
+	private BuildFileFactory fac;
+
 	@Test
 	public void testLookUpBuildFiles() throws Exception {
 		// given
-		codeBaseHandler = weld.select(CodeBaseHandler.class).get();
 		File prjRoot = tempFolder.newFolder("fooPrj");
 		new File(prjRoot, "pom.xml").createNewFile();
 		new File(prjRoot, "settings.xml").createNewFile();
@@ -56,7 +62,9 @@ public class CodeBaseHandlerTest {
 		subDir.mkdir();
 		new File(subDir, "build.gradle").createNewFile();
 		new File(subDir, "HelloWorld.java").createNewFile();
-		when(codeBaseProvider.getLocalRepositoryRoot(any())).thenReturn(prjRoot);
+		when(codeBaseProvider.getLocalRepositoryRoot("foo")).thenReturn(prjRoot);
+
+		codeBaseHandler = weld.select(CodeBaseHandler.class).get();
 
 		// when
 		List<BuildFile> buildFiles = codeBaseHandler.lookUpBuildFiles("foo", 3);
@@ -66,14 +74,15 @@ public class CodeBaseHandlerTest {
 		assertEquals(2, buildFiles.size());
 	}
 
+	private Bean<?> createBuildFactoryBean() {
+		fac = mock(BuildFileFactory.class);
+		return MockBean.builder().types(BuildFileFactory.class).creating(fac).build();
+	}
+
 	@Test
-	@Ignore
 	public void testGetDependecies() throws Exception {
 		// given
-		BuildFileFactory fac = mock(BuildFileFactory.class);
-		weld = WeldInitiator.from(CodeBaseHandler.class)
-				.addBeans(MockBean.builder().types(BuildFileFactory.class).creating(fac).build()).build();
-		codeBaseHandler = weld.select(CodeBaseHandler.class).get();
+		codeBaseHandler = weld2.select(CodeBaseHandler.class).get();
 		BuildFile file = new BuildFile();
 		file.setBuildToolType(BuildToolType.GRADLE);
 		BuildTool gradleTool = mock(BuildTool.class);
@@ -89,7 +98,7 @@ public class CodeBaseHandlerTest {
 		assertFalse(dependecies.isEmpty());
 	}
 
-	private Bean<?> createBeanConfig() {
+	private Bean<?> createCodeBaseProviderBeanConfig() {
 		codeBaseProvider = mock(CodeBaseProvider.class);
 		return MockBean.builder().types(CodeBaseProvider.class).creating(codeBaseProvider).build();
 	}

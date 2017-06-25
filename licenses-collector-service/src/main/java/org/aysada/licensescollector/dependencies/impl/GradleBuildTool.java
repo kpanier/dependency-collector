@@ -10,12 +10,18 @@
  *******************************************************************************/
 package org.aysada.licensescollector.dependencies.impl;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.aysada.licensescollector.dependencies.BuildTool;
 import org.aysada.licensescollector.dependencies.model.BuildFile;
 import org.aysada.licensescollector.dependencies.model.BuildToolType;
 import org.aysada.licensescollector.dependencies.model.Dependency;
+import org.gradle.tooling.BuildLauncher;
+import org.gradle.tooling.GradleConnector;
+import org.gradle.tooling.ProjectConnection;
 
 public class GradleBuildTool implements BuildTool {
 
@@ -34,8 +40,62 @@ public class GradleBuildTool implements BuildTool {
 
 	@Override
 	public List<Dependency> getDependencies(BuildFile buildFile) {
-		
-		return null;
+		GradleConnector connector = GradleConnector.newConnector();
+		ProjectConnection connect = connector.forProjectDirectory(buildFile.getPath().toFile().getParentFile())
+				.connect();
+		BuildLauncher buildLauncher = connect.newBuild();
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		buildLauncher.setStandardOutput(outputStream);
+		buildLauncher.forTasks("dependencies");
+		buildLauncher.run();
+		connect.close();
+		try {
+			outputStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return extractDependencyFromOutput(outputStream.toString());
+	}
+
+	public List<Dependency> extractDependencyFromOutput(String output) {
+		ArrayList<Dependency> result = new ArrayList<Dependency>();
+		String[] lines = output.split("\n");
+		boolean inRuntimeClassPath = false;
+		for (String line : lines) {
+			inRuntimeClassPath = isInRuntimeClassPath(line, inRuntimeClassPath);
+			if (inRuntimeClassPath && !line.startsWith("runtimeClasspath")) {
+				if (line.startsWith("+")) {
+					result.add(createDependencyFrom(line));
+				}
+			}
+		}
+		return result;
+	}
+
+	protected Dependency createDependencyFrom(String line) {
+		Dependency dependency = new Dependency();
+		String[] strings = line.substring(line.lastIndexOf("---") + 3).trim().split(":");
+		dependency.setGroup(strings[0]);
+		dependency.setName(strings[1]);
+		if (strings[2].contains("->")) {
+			dependency.setVersion(strings[2].split("->")[1].trim());
+		} else {
+			dependency.setVersion(strings[2]);
+		}
+		return dependency;
+	}
+
+	protected boolean isInRuntimeClassPath(String line, boolean inRuntimeClassPath) {
+		if (line.startsWith("runtimeClasspath")) {
+			return true;
+		}
+		String trimmedLine = line.trim();
+		boolean depTreeElement = trimmedLine.startsWith("|") || trimmedLine.startsWith("+")
+				|| trimmedLine.startsWith("\\");
+		if (inRuntimeClassPath && !depTreeElement && trimmedLine.equals("")) {
+			return false;
+		}
+		return inRuntimeClassPath;
 	}
 
 }
