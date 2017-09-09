@@ -24,6 +24,7 @@
 npm-debug.log
 testem.log
 /typings
+/.gradle
 
 # e2e
 /e2e/*.js
