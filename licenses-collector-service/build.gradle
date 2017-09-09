@@ -1,7 +1,7 @@
 plugins {
     id 'application'
     id "nebula.integtest" version "3.4.0"
-    id "org.owasp.dependencycheck" version "1.4.5.1"
+    id "org.owasp.dependencycheck" version "2.0.0"
 }
 
 repositories {
@@ -25,7 +25,7 @@ tasks.withType(Test) {
 }
 
 project.ext {
-   dropwizardVersion = '1.1.1'
+   dropwizardVersion = '1.1.2'
    configPath = "$rootProject.projectDir/"
 }
 
@@ -41,8 +41,11 @@ dependencies {
    compile group: 'org.jboss.weld.servlet', name: 'weld-servlet-core', version: '2.4.3.Final'
 
    compile group: 'ma.glasnost.orika', name: 'orika-core', version: '1.5.0'
-   compile group: 'io.swagger', name: 'swagger-annotations', version: '1.5.12'
-   compile group: 'io.swagger', name: 'swagger-jaxrs', version: '1.5.12'
+   compile group: 'io.swagger', name: 'swagger-annotations', version: '1.5.13'
+   compile('io.swagger:swagger-jaxrs:1.5.13') {
+      exclude group: 'javax.ws.rs', module: 'jsr311-api'
+   }
+
 
    compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '4.7.0.201704051617-r'
    compile group: 'org.gradle', name: 'gradle-tooling-api', version: '3.5'
